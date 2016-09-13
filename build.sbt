@@ -1,4 +1,4 @@
-name := """slick3play"""
+name := """hitman"""
 
 version := "1.0-SNAPSHOT"
 
@@ -16,6 +16,9 @@ libraryDependencies ++= Seq(
 )
 
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
+libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.0"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test"
+libraryDependencies += "org.scalatest" % "scalatest_2.11" % "2.2.2"
 
 // Play provides two styles of routers, one expects its actions to be injected, the
 // other, legacy style, accesses its actions statically.

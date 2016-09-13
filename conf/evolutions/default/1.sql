@@ -6,7 +6,7 @@ create table `user` (
   `username` TEXT NOT NULL,
   `hp` INT NOT NULL,
   `rp` decimal NOT NULL,
-  `bullets` INT NOT NULL,
+  `bullets` INT NOT NULL
 )
 
 # --- !Downs
