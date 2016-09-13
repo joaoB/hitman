@@ -9,32 +9,18 @@ import slick.driver.JdbcProfile
 import slick.driver.MySQLDriver.api._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-case class User(id: Long, firstName: String, lastName: String, mobile: Long, email: String)
-
-case class UserFormData(firstName: String, lastName: String, mobile: Long, email: String)
-
-object UserForm {
-
-  val form = Form(
-    mapping(
-      "firstName" -> nonEmptyText,
-      "lastName" -> nonEmptyText,
-      "mobile" -> longNumber,
-      "email" -> email
-    )(UserFormData.apply)(UserFormData.unapply)
-  )
-}
+case class User(id: Long, username: String, hp: Int, rp: Float, bullets: Int)
 
 class UserTableDef(tag: Tag) extends Table[User](tag, "user") {
 
   def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
-  def firstName = column[String]("first_name")
-  def lastName = column[String]("last_name")
-  def mobile = column[Long]("mobile")
-  def email = column[String]("email")
+  def username = column[String]("username")
+  def hp = column[Int]("hp")
+  def rp = column[Float]("rp")
+  def bullets = column[Int]("bullets")
 
   override def * =
-    (id, firstName, lastName, mobile, email) <>(User.tupled, User.unapply)
+    (id, username, hp, rp, bullets) <>(User.tupled, User.unapply)
 }
 
 object Users {

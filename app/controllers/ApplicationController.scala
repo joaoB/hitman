@@ -1,6 +1,6 @@
 package controllers
 
-import model.{User, UserForm}
+import model.User
 import play.api.mvc._
 import scala.concurrent.Future
 import service.UserService
@@ -10,11 +10,11 @@ class ApplicationController extends Controller {
 
   def index = Action.async { implicit request =>
     UserService.listAllUsers map { users =>
-      Ok(views.html.index(UserForm.form, users))
+      Ok(views.html.index(users))
     }
   }
 
-  def addUser() = Action.async { implicit request =>
+  /*def addUser() = Action.async { implicit request =>
     UserForm.form.bindFromRequest.fold(
       // if any error in submitted data
       errorForm => Future.successful(Ok(views.html.index(errorForm, Seq.empty[User]))),
@@ -24,7 +24,7 @@ class ApplicationController extends Controller {
           Redirect(routes.ApplicationController.index())
         )
       })
-  }
+  }*/
 
   def deleteUser(id: Long) = Action.async { implicit request =>
     UserService.deleteUser(id) map { res =>
