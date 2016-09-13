@@ -20,6 +20,12 @@ class ApplicationController extends Controller {
     }
   }
 
+  def doCrime(id: Long) = Action.async { implicit request =>
+    UserService.doCrime(id) map { result =>
+      Ok("Ok")
+    }
+  }
+
   /*def addUser() = Action.async { implicit request =>
     UserForm.form.bindFromRequest.fold(
       // if any error in submitted data

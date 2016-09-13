@@ -5,6 +5,7 @@
 # Home page
 GET   /                         controllers.ApplicationController.index
 GET   /buyBullets/:id/:amount   controllers.ApplicationController.buyBullets(id: Long, amount: Int)
+GET   /doCrime/:id                  controllers.ApplicationController.doCrime(id: Long)
 GET   /delete/:id               controllers.ApplicationController.deleteUser(id : Long)
 
 # Map static resources from the /public folder to the /assets URL path

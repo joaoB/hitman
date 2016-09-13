@@ -2,6 +2,7 @@ package service
 
 import model.{ User, Users }
 import scala.concurrent.Future
+import services.CrimeService
 
 object UserService {
 
@@ -26,6 +27,16 @@ object UserService {
     }
   }
 
+  def doCrime(id: Long) = {
+    val prize = CrimeService.crimeAmount
+    import scala.concurrent.ExecutionContext.Implicits.global
+    val usr = Users.get(id)
+    usr map {
+      case Some(user) => Users.addMoney(user, prize)
+      case None => 0
+    }
+  }
+  
   def listAllUsers: Future[Seq[User]] = {
     Users.listAll
   }
