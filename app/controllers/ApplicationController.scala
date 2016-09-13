@@ -14,6 +14,12 @@ class ApplicationController extends Controller {
     }
   }
 
+  def buyBullets(id: Long, amount: Int) = Action.async { implicit request =>
+    UserService.buyBullets(id, amount) map { result =>
+      Ok("Ok")
+    }
+  }
+
   /*def addUser() = Action.async { implicit request =>
     UserForm.form.bindFromRequest.fold(
       // if any error in submitted data

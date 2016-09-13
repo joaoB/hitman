@@ -49,7 +49,7 @@ object Users {
 
   def buyBullets(user: User, amount: Int) = {
     val userToUpdate = user.copy(bullets = user.bullets + amount)
-    dbConfig.db.run(users.filter(_.id === user.id).update(user))
+    dbConfig.db.run(users.filter(_.id === user.id).update(userToUpdate))
   }
 
 }
