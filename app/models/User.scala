@@ -13,14 +13,14 @@ case class User(id: Long, username: String, hp: Int, rp: Float, bullets: Int)
 
 class UserTableDef(tag: Tag) extends Table[User](tag, "user") {
 
-  def id = column[Long]("id", O.PrimaryKey,O.AutoInc)
+  def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
   def username = column[String]("username")
   def hp = column[Int]("hp")
   def rp = column[Float]("rp")
   def bullets = column[Int]("bullets")
 
   override def * =
-    (id, username, hp, rp, bullets) <>(User.tupled, User.unapply)
+    (id, username, hp, rp, bullets) <> (User.tupled, User.unapply)
 }
 
 object Users {
@@ -45,6 +45,11 @@ object Users {
 
   def listAll: Future[Seq[User]] = {
     dbConfig.db.run(users.result)
+  }
+
+  def buyBullets(user: User, amount: Int) = {
+    val userToUpdate = user.copy(bullets = user.bullets + amount)
+    dbConfig.db.run(users.filter(_.id === user.id).update(user))
   }
 
 }
