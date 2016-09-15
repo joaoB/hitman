@@ -9,6 +9,7 @@ import slick.driver.JdbcProfile
 import slick.driver.MySQLDriver.api._
 import scala.concurrent.ExecutionContext.Implicits.global
 import java.sql.Timestamp
+import java.util.Date
 
 case class WaitingTime(id: Long, bullets: Timestamp, crime: Timestamp, user: Long)
 
@@ -35,6 +36,20 @@ object WaitingTimes {
       res => true).recover {
         case ex: Exception => false
       }
+  }
+
+  def getByUser(user: User): Future[Option[WaitingTime]] = {
+    dbConfig.db.run(waitingTimes.filter(_.user === user.id).result.headOption)
+  }
+
+  def refreshCrime(user: User, nextCrime: Timestamp) = {
+    getByUser(user) map {
+      case Some(elem) => {
+        val waitingToUpdate = elem.copy(crime = nextCrime)
+        dbConfig.db.run(waitingTimes.filter(_.user === user.id).update(waitingToUpdate))
+
+      }
+    }
   }
 
 }
