@@ -28,6 +28,13 @@ object WaitingTimes {
 
   val dbConfig = DatabaseConfigProvider.get[JdbcProfile](Play.current)
 
-  val waitingTimes = TableQuery[UserTableDef]
+  val waitingTimes = TableQuery[WaitingTimeTableDef]
+
+  def add(wt: WaitingTime): Future[Boolean] = {
+    dbConfig.db.run(waitingTimes += wt).map(
+      res => true).recover {
+        case ex: Exception => false
+      }
+  }
 
 }
