@@ -30,11 +30,8 @@ object Users {
 
   val users = TableQuery[UserTableDef]
 
-  def add(user: User): Future[Int] = {
-    dbConfig.db.run(users += user).map(
-      res => res).recover {
-        case ex: Exception => -1
-      }
+  def add(user: User): Future[Long] = {
+    dbConfig.db.run((users returning users.map(_.id)) += user)
   }
 
   def delete(id: Long): Future[Int] = {

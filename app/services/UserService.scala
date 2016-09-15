@@ -10,7 +10,10 @@ object UserService {
   def addUser(user: User) = {
     import scala.concurrent.ExecutionContext.Implicits.global
     Users.add(user).map {
-      id => WaitingTimeService.create(id)
+      id => {
+        println("hereeeeeeeeeeeeeeeee  " + id)
+        WaitingTimeService.create(id)
+      }
     }.recover{case _ => Future(false)}
   }
 
