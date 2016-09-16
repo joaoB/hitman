@@ -1,34 +1,38 @@
 package model
 
-import play.api.Play
-import play.api.data.Form
+import scala.concurrent.ExecutionContext.Implicits.global
+
 import play.api.data.Forms._
+import scala.concurrent.{ Future, ExecutionContext }
 import play.api.db.slick.DatabaseConfigProvider
-import scala.concurrent.Future
 import slick.driver.JdbcProfile
 import slick.driver.MySQLDriver.api._
-import scala.concurrent.ExecutionContext.Implicits.global
+import com.google.inject._
 
 case class User(id: Long, username: String, hp: Int, rp: Float, bullets: Int, money: Int)
 
-class UserTableDef(tag: Tag) extends Table[User](tag, "user") {
+@Singleton
+class Users @Inject() (dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
 
-  def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
-  def username = column[String]("username")
-  def hp = column[Int]("hp")
-  def rp = column[Float]("rp")
-  def bullets = column[Int]("bullets")
-  def money = column[Int]("money")
+  private val dbConfig = dbConfigProvider.get[JdbcProfile]
 
-  override def * =
-    (id, username, hp, rp, bullets, money) <> (User.tupled, User.unapply)
-}
+  import dbConfig._
+  import driver.api._
 
-object Users {
+  private class UserTableDef(tag: Tag) extends Table[User](tag, "user") {
 
-  val dbConfig = DatabaseConfigProvider.get[JdbcProfile](Play.current)
+    def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
+    def username = column[String]("username")
+    def hp = column[Int]("hp")
+    def rp = column[Float]("rp")
+    def bullets = column[Int]("bullets")
+    def money = column[Int]("money")
 
-  val users = TableQuery[UserTableDef]
+    override def * =
+      (id, username, hp, rp, bullets, money) <> (User.tupled, User.unapply)
+  }
+
+  private val users = TableQuery[UserTableDef]
 
   def add(user: User): Future[Long] = {
     dbConfig.db.run((users returning users.map(_.id)) += user)

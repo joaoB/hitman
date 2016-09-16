@@ -5,35 +5,37 @@ import play.api.mvc._
 import scala.concurrent.Future
 import service.UserService
 import scala.concurrent.ExecutionContext.Implicits.global
+import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
-class ApplicationController extends Controller {
+class ApplicationController @Inject()(userService: UserService) (implicit ec: ExecutionContext) extends Controller {
 
   def index = Action.async { implicit request =>
-    UserService.listAllUsers map { users =>
+    userService.listAllUsers map { users =>
       Ok(views.html.index(users))
     }
   }
 
   def buyBullets(id: Long, amount: Int) = Action.async { implicit request =>
-    UserService.buyBullets(id, amount) map { result =>
+    userService.buyBullets(id, amount) map { result =>
       Ok("Ok")
     }
   }
 
   def doCrime(id: Long) = Action.async { implicit request =>
-    UserService.doCrime(id) map { result =>
+    userService.doCrime(id) map { result =>
       Ok(result)
     }
   }
 
   def addUser() = Action.async { implicit request =>
     val newUser = User(0, "a", 0, 0, 1, 1)
-    UserService.addUser(newUser).map(res =>
+    userService.addUser(newUser).map(res =>
       Redirect(routes.ApplicationController.index()))
   }
 
   def deleteUser(id: Long) = Action.async { implicit request =>
-    UserService.deleteUser(id) map { res =>
+    userService.deleteUser(id) map { res =>
       Redirect(routes.ApplicationController.index())
     }
   }

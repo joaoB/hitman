@@ -3,45 +3,46 @@ package service
 import scala.concurrent.Future
 
 import model.User
-import model.Users
 import services.crime.CrimeService
 import services.crime.CrimeServiceBase
 import scala.concurrent.ExecutionContext.Implicits.global
+import model.Users
+import com.google.inject._
+import scala.concurrent.ExecutionContext.Implicits.global
+import services.crime.CrimeService
+import model.Users
+import services.crime.CrimeService
 
-object UserService extends UserService(new CrimeService)
-
-class UserService(crimeService: CrimeServiceBase) {
-
+class UserService @Inject() (usersRepository: Users, crimeService: CrimeService, waitingTimeService: WaitingTimeService) {
+  
   def addUser(user: User): Future[Boolean] = {
-    Users.add(user).flatMap(WaitingTimeService.create(_)).recover { case _ => false }
+    usersRepository.add(user).flatMap(waitingTimeService.create(_)).recover { case _ => false }
   }
 
   def deleteUser(id: Long): Future[Int] = {
-    Users.delete(id)
+    usersRepository.delete(id)
   }
 
   def getUser(id: Long): Future[Option[User]] = {
-    Users.get(id)
+    usersRepository.get(id)
   }
 
   def buyBullets(id: Long, amount: Int) = {
-    val usr = Users.get(id)
+    val usr = usersRepository.get(id)
     usr map {
-      case Some(user) => Users.buyBullets(user, amount)
+      case Some(user) => usersRepository.buyBullets(user, amount)
       case None       => 0
     }
   }
 
   def doCrime(id: Long): Future[String] = {
-    import scala.concurrent.ExecutionContext.Implicits.global
-
-    Users.get(id).flatMap {
+    usersRepository.get(id).flatMap {
       case Some(user) => crimeService.doCrime(user)
       case None       => Future("Invalid user")
     }
   }
 
   def listAllUsers: Future[Seq[User]] = {
-    Users.listAll
+    usersRepository.listAll
   }
 }

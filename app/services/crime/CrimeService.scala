@@ -11,8 +11,10 @@ import model.User
 import model.Users
 import model.WaitingTime
 import model.WaitingTimes
+import com.google.inject._
 
-class CrimeService extends CrimeServiceBase {
+
+class CrimeService @Inject() (usersRepository: Users, waitingTimeRepository: WaitingTimes){
 
   val crimeTime = 60 * 1000
 
@@ -21,7 +23,7 @@ class CrimeService extends CrimeServiceBase {
   }
 
   def canPerform(user: User): Future[Long] = {
-    WaitingTimes.getByUser(user) map {
+    waitingTimeRepository.getByUser(user) map {
       case Some(elem) => canPerformAux(elem)
       case None       => crimeTime
     }
@@ -31,7 +33,7 @@ class CrimeService extends CrimeServiceBase {
     def doCrimeAux(user: User, time: Long): Future[String] = {
       if (time < 0) {
         val prize = crimeAmount
-        Users.addMoney(user, prize)
+        usersRepository.addMoney(user, prize)
         refresh(user)
         Future("You did " + prize)
       } else {
@@ -50,9 +52,9 @@ class CrimeService extends CrimeServiceBase {
   }
 
   def refresh(user: User) = {
-    WaitingTimes.getByUser(user) map {
+    waitingTimeRepository.getByUser(user) map {
       case Some(elem) =>
-        WaitingTimes.refreshCrime(user, calculateNextCrimeTime)
+        waitingTimeRepository.refreshCrime(user, calculateNextCrimeTime)
       case None =>
     }
   }
