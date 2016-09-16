@@ -18,7 +18,7 @@ class ApplicationController @Inject()(userService: UserService) (implicit ec: Ex
 
   def buyBullets(id: Long, amount: Int) = Action.async { implicit request =>
     userService.buyBullets(id, amount) map { result =>
-      Ok("Ok")
+      Ok(result)
     }
   }
 

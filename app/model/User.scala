@@ -1,12 +1,8 @@
 package model
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
-import play.api.data.Forms._
 import scala.concurrent.{ Future, ExecutionContext }
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile
-import slick.driver.MySQLDriver.api._
 import com.google.inject._
 
 case class User(id: Long, username: String, hp: Int, rp: Float, bullets: Int, money: Int)
@@ -49,7 +45,7 @@ class Users @Inject() (dbConfigProvider: DatabaseConfigProvider)(implicit ec: Ex
   def listAll: Future[Seq[User]] = {
     dbConfig.db.run(users.result)
   }
-
+  
   def buyBullets(user: User, amount: Int) = {
     val userToUpdate = user.copy(bullets = user.bullets + amount)
     update(userToUpdate)

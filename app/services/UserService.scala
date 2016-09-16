@@ -1,20 +1,17 @@
 package service
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
+import com.google.inject.Inject
+import com.google.inject.Singleton
+
 import model.User
-import services.crime.CrimeService
-import services.crime.CrimeServiceBase
-import scala.concurrent.ExecutionContext.Implicits.global
-import model.Users
-import com.google.inject._
-import scala.concurrent.ExecutionContext.Implicits.global
-import services.crime.CrimeService
 import model.Users
 import services.crime.CrimeService
 
 class UserService @Inject() (usersRepository: Users, crimeService: CrimeService, waitingTimeService: WaitingTimeService) {
-  
+
   def addUser(user: User): Future[Boolean] = {
     usersRepository.add(user).flatMap(waitingTimeService.create(_)).recover { case _ => false }
   }
@@ -27,11 +24,15 @@ class UserService @Inject() (usersRepository: Users, crimeService: CrimeService,
     usersRepository.get(id)
   }
 
-  def buyBullets(id: Long, amount: Int) = {
+  def buyBullets(id: Long, amount: Int): Future[String] = {
     val usr = usersRepository.get(id)
-    usr map {
-      case Some(user) => usersRepository.buyBullets(user, amount)
-      case None       => 0
+    if (amount < 0)
+      Future("You can not buy a negative amount of bullets")
+    else {
+      usr flatMap {
+        case Some(user) => usersRepository.buyBullets(user, amount) map (_ => "Success! You bought " + amount + " bullets")
+        case None       => Future("User not found")
+      }
     }
   }
 
