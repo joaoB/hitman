@@ -22,7 +22,7 @@ class ApplicationController extends Controller {
 
   def doCrime(id: Long) = Action.async { implicit request =>
     UserService.doCrime(id) map { result =>
-      Ok("Ok")
+      Ok(result)
     }
   }
 

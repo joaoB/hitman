@@ -8,8 +8,11 @@ import scala.concurrent.Future
 import slick.driver.JdbcProfile
 import slick.driver.MySQLDriver.api._
 import scala.concurrent.ExecutionContext.Implicits.global
+
 import java.sql.Timestamp
 import java.util.Date
+
+import model.Users;
 
 case class WaitingTime(id: Long, bullets: Timestamp, crime: Timestamp, user: Long)
 

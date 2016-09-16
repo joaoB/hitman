@@ -9,5 +9,6 @@ abstract class CrimeServiceBase {
   def crimeAmount: Int
   def canPerform(user: User): Future[Long]
   def refresh(user: User)
+  def doCrime(user: User) : Future[String]
 
 }

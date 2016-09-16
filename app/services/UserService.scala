@@ -9,7 +9,7 @@ import services.crime.CrimeServiceBase
 
 object UserService extends UserService(new CrimeService)
 
-class UserService(crimeService : CrimeServiceBase) {
+class UserService(crimeService: CrimeServiceBase) {
 
   def addUser(user: User): Future[Boolean] = {
     import scala.concurrent.ExecutionContext.Implicits.global
@@ -35,27 +35,13 @@ class UserService(crimeService : CrimeServiceBase) {
     }
   }
 
-  def doCrime(id: Long) = {
+  def doCrime(id: Long): Future[String] = {
     import scala.concurrent.ExecutionContext.Implicits.global
-    val usr = Users.get(id)
-    usr map {
-      case Some(user) => {
-        val cp = crimeService.canPerform(user)
-        cp.map {
-          case time if time < 0 => {
-            val prize = crimeService.crimeAmount
-            Users.addMoney(user, prize)
-            crimeService.refresh(user)
-          }
-          case other => {
-            println("brrrrrrr" + other)
-          }
-        }.recover { case _ => 0 }
 
-      }
-      case None => 0
+    Users.get(id).flatMap {
+      case Some(user) => crimeService.doCrime(user)
+      case None       => Future("Invalid user")
     }
-
   }
 
   def listAllUsers: Future[Seq[User]] = {
