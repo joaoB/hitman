@@ -45,13 +45,17 @@ object WaitingTimes {
     dbConfig.db.run(waitingTimes.filter(_.user === user.id).result.headOption)
   }
 
-  def refreshCrime(user: User, nextCrime: Timestamp) = {
-    getByUser(user) map {
+  def updateByUser(user: User, waitingToUpdate: WaitingTime): Future[Int] = {
+    dbConfig.db.run(waitingTimes.filter(_.user === user.id).update(waitingToUpdate))
+  }
+
+  def refreshCrime(user: User, nextCrime: Timestamp): Future[Int] = {
+    getByUser(user) flatMap {
       case Some(elem) => {
         val waitingToUpdate = elem.copy(crime = nextCrime)
-        dbConfig.db.run(waitingTimes.filter(_.user === user.id).update(waitingToUpdate))
-
+        updateByUser(user, waitingToUpdate)
       }
+      case None => Future(0) //something went really bad
     }
   }
 

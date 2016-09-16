@@ -6,16 +6,14 @@ import model.User
 import model.Users
 import services.crime.CrimeService
 import services.crime.CrimeServiceBase
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object UserService extends UserService(new CrimeService)
 
 class UserService(crimeService: CrimeServiceBase) {
 
   def addUser(user: User): Future[Boolean] = {
-    import scala.concurrent.ExecutionContext.Implicits.global
-    Users.add(user).map(
-      WaitingTimeService.create(_))
-      .recover { case _ => Future(false) }.flatMap(x => x)
+    Users.add(user).flatMap(WaitingTimeService.create(_)).recover { case _ => false }
   }
 
   def deleteUser(id: Long): Future[Int] = {
@@ -27,7 +25,6 @@ class UserService(crimeService: CrimeServiceBase) {
   }
 
   def buyBullets(id: Long, amount: Int) = {
-    import scala.concurrent.ExecutionContext.Implicits.global
     val usr = Users.get(id)
     usr map {
       case Some(user) => Users.buyBullets(user, amount)
