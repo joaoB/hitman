@@ -1,29 +1,32 @@
 package services.crime
 
-import scala.concurrent.Future
-import model.User
 import java.sql.Timestamp
 import java.util.Date
-import model.WaitingTimes
-import scala.concurrent.ExecutionContext.Implicits.global
-import model.WaitingTime
 
-abstract class GenericActionService(waitingTimeRepository: WaitingTimes) {
+import scala.concurrent.Future
+
+import model.User
+import model.WaitingTime
+import service.WaitingTimeService
+
+abstract class GenericActionService(waitingTimeService: WaitingTimeService) {
   val actionTime: Int // how long user wait between actions
 
   // how long user has to wait for next action
-  def whenNextAction(user: User): Future[Long] = {
-    waitingTimeRepository.getByUser(user) map {
-      case Some(elem) => whenNextActionAux(elem)
-      case None       => actionTime
-    }
-  }
+  def whenNextAction(user: User): Future[Int] =
+    waitingTimeService.getWaitingTimeByUser(user, whenNextActionAux _)
 
-  def whenNextActionAux(elem: WaitingTime): Long
+  def whenNextActionAux(elem: WaitingTime): Future[Int]
 
   def doAction(user: User): Future[String] //perfom action logic
 
-  def setHot(user: User): Future[Int]
+  def refresh: (WaitingTime, Timestamp) => Future[Int]
+
+  def setHot(user: User): Future[Int] = {
+    waitingTimeService.getWaitingTimeByUser(user,
+      { elem: WaitingTime => refresh(elem, calculateNextActionTime) })
+  }
+
   //return timestamp of next action
   def calculateNextActionTime: Timestamp = {
     val d = new Date

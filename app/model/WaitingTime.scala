@@ -51,24 +51,18 @@ class WaitingTimes @Inject() (dbConfigProvider: DatabaseConfigProvider)(implicit
     dbConfig.db.run(waitingTimes.filter(_.user === user.id).update(waitingToUpdate))
   }
 
-  def refreshCrime(user: User, nextCrime: Timestamp): Future[Int] = {
-    getByUser(user) flatMap {
-      case Some(elem) => {
-        val waitingToUpdate = elem.copy(crime = nextCrime)
-        updateByUser(user, waitingToUpdate)
-      }
-      case None => Future(0) //something went really bad
-    }
+  def update(waitingToUpdate: WaitingTime): Future[Int] = {
+    dbConfig.db.run(waitingTimes.filter(_.id === waitingToUpdate.id).update(waitingToUpdate))
   }
 
-  def refreshBullets(user: User, next: Timestamp): Future[Int] = {
-    getByUser(user) flatMap {
-      case Some(elem) => {
-        val waitingToUpdate = elem.copy(bullets = next)
-        updateByUser(user, waitingToUpdate)
-      }
-      case None => Future(0) //something went really bad
-    }
+  def refreshCrime(elem: WaitingTime, nextCrime: Timestamp): Future[Int] = {
+    val waitingToUpdate = elem.copy(crime = nextCrime)
+    update(waitingToUpdate)
+  }
+
+  def refreshBullets(elem: WaitingTime, next: Timestamp): Future[Int] = {
+    val waitingToUpdate = elem.copy(bullets = next)
+    update(waitingToUpdate)
   }
 
 }

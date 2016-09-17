@@ -13,10 +13,11 @@ import model.Users
 import model.WaitingTimes
 import java.util.Calendar
 import model.WaitingTime
+import service.WaitingTimeService
 
 class BulletsService @Inject() (
     usersRepository: Users,
-    waitingTimeRepository: WaitingTimes) extends GenericActionService(waitingTimeRepository) {
+    waitingTimeService: WaitingTimeService) extends GenericActionService(waitingTimeService) {
   val actionTime: Int = 60 * 60 * 1000
 
   def doAction(user: User) = ??? //think about this later
@@ -35,16 +36,12 @@ class BulletsService @Inject() (
       }
     }
 
-  def setHot(user: User): Future[Int] = {
-    waitingTimeRepository.getByUser(user) flatMap {
-      case Some(elem) =>
-        waitingTimeRepository.refreshBullets(user, super.calculateNextActionTime)
-      case None => Future(-1) //something went bad
-    }
+  def refresh = {
+    (elem: WaitingTime, t: Timestamp) => waitingTimeService.refreshBullets(elem, t)
   }
 
   def whenNextActionAux(elem: WaitingTime) = {
     val now = new Timestamp(Calendar.getInstance.getTime.getTime)
-    elem.bullets.getTime - now.getTime
+    Future(elem.bullets.getTime - now.getTime toInt)
   }
 }
