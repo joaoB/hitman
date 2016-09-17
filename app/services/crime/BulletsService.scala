@@ -17,7 +17,7 @@ import model.WaitingTime
 class BulletsService @Inject() (
     usersRepository: Users,
     waitingTimeRepository: WaitingTimes) extends GenericActionService(waitingTimeRepository) {
-  val actionTime: Int = 60 * 60 * 60 * 1000
+  val actionTime: Int = 60 * 60 * 1000
 
   def doAction(user: User) = ??? //think about this later
 

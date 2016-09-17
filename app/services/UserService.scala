@@ -29,12 +29,17 @@ class UserService @Inject() (
     usersRepository.get(id)
   }
 
-  def buyBullets(id: Long, amount: Int): Future[String] =
-    usersRepository.get(id).flatMap {
-      case Some(user) => bulletsService.doAction(user, amount)
+  def getUser(id: Long, f: User => Future[String]): Future[String] =
+    getUser(id).flatMap {
+      case Some(user) => f(user)
       case None       => Future("Invalid user")
     }
 
+  def buyBullets(id: Long, amount: Int): Future[String] = {
+    getUser(id, {
+      user => bulletsService.doAction(user, amount)
+    })
+  }
   def doCrime(id: Long): Future[String] =
     usersRepository.get(id).flatMap {
       case Some(user) => crimeService.doAction(user)
