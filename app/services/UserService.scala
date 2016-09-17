@@ -11,7 +11,7 @@ import model.Users
 import services.crime.CrimeService
 
 class UserService @Inject() (usersRepository: Users, crimeService: CrimeService, waitingTimeService: WaitingTimeService) {
-
+  
   def addUser(user: User): Future[Boolean] = {
     usersRepository.add(user).flatMap(waitingTimeService.create(_)).recover { case _ => false }
   }
@@ -38,7 +38,7 @@ class UserService @Inject() (usersRepository: Users, crimeService: CrimeService,
 
   def doCrime(id: Long): Future[String] = {
     usersRepository.get(id).flatMap {
-      case Some(user) => crimeService.doCrime(user)
+      case Some(user) => crimeService.doAction(user)
       case None       => Future("Invalid user")
     }
   }

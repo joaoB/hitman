@@ -1,68 +1,60 @@
 package services.crime
 
 import java.sql.Timestamp
-import java.util.Calendar
 import java.util.Date
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-import model.User
-import model.Users
-import model.WaitingTime
-import model.WaitingTimes
 import com.google.inject._
 
+import model.User
+import model.Users
+import model.WaitingTimes
+import java.util.Calendar
+import model.WaitingTime
 
-class CrimeService @Inject() (usersRepository: Users, waitingTimeRepository: WaitingTimes){
+class CrimeService @Inject() (usersRepository: Users, waitingTimeRepository: WaitingTimes) extends GenericActionService {
+  val actionTime: Int = 60 * 1000
 
-  val crimeTime = 60 * 1000
-
-  def crimeAmount: Int = {
+  private def crimeAmount: Int = {
     Math.random * 1000 toInt
   }
 
-  def canPerform(user: User): Future[Long] = {
-    waitingTimeRepository.getByUser(user) map {
-      case Some(elem) => canPerformAux(elem)
-      case None       => crimeTime
-    }
-  }
-
-  def doCrime(user: User): Future[String] = {
+  def doAction(user: User): Future[String] = {
     def doCrimeAux(user: User, time: Long): Future[String] = {
       if (time < 0) {
         val prize = crimeAmount
         usersRepository.addMoney(user, prize)
-        refresh(user)
+        setHot(user)
         Future("You did " + prize)
       } else {
         Future("You still have to wait " + (time / 1000).toInt + " seconds!")
       }
     }
     for {
-      time <- canPerform(user)
+      time <- whenNextAction(user)
       result <- doCrimeAux(user, time)
     } yield result
   }
 
-  private def canPerformAux(elem: WaitingTime) = {
-    val now = new Timestamp(Calendar.getInstance.getTime.getTime)
-    elem.crime.getTime - now.getTime
-  }
-
-  def refresh(user: User) = {
-    waitingTimeRepository.getByUser(user) map {
+  def setHot(user: User): Future[Int] = {
+    waitingTimeRepository.getByUser(user) flatMap {
       case Some(elem) =>
-        waitingTimeRepository.refreshCrime(user, calculateNextCrimeTime)
-      case None =>
+        waitingTimeRepository.refreshCrime(user, super.calculateNextActionTime)
+      case None => Future(-1) //something went bad
     }
   }
 
-  private def calculateNextCrimeTime = {
-    val d = new Date
-    d.setTime(d.getTime + crimeTime)
-    new Timestamp(d.getTime)
+  def whenNextAction(user: User): Future[Long] = {
+    waitingTimeRepository.getByUser(user) map {
+      case Some(elem) => whenNextActionAux(elem)
+      case None       => actionTime
+    }
   }
 
+  private def whenNextActionAux(elem: WaitingTime) = {
+    val now = new Timestamp(Calendar.getInstance.getTime.getTime)
+    elem.crime.getTime - now.getTime
+  }
 }
