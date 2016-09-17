@@ -14,7 +14,9 @@ import model.WaitingTimes
 import java.util.Calendar
 import model.WaitingTime
 
-class CrimeService @Inject() (usersRepository: Users, waitingTimeRepository: WaitingTimes) extends GenericActionService {
+class CrimeService @Inject() (
+    usersRepository: Users, 
+    waitingTimeRepository: WaitingTimes) extends GenericActionService(waitingTimeRepository) {
   val actionTime: Int = 60 * 1000
 
   private def crimeAmount: Int = {
@@ -46,14 +48,7 @@ class CrimeService @Inject() (usersRepository: Users, waitingTimeRepository: Wai
     }
   }
 
-  def whenNextAction(user: User): Future[Long] = {
-    waitingTimeRepository.getByUser(user) map {
-      case Some(elem) => whenNextActionAux(elem)
-      case None       => actionTime
-    }
-  }
-
-  private def whenNextActionAux(elem: WaitingTime) = {
+  def whenNextActionAux(elem: WaitingTime) = {
     val now = new Timestamp(Calendar.getInstance.getTime.getTime)
     elem.crime.getTime - now.getTime
   }

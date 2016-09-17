@@ -21,7 +21,7 @@ class WaitingTimes @Inject() (dbConfigProvider: DatabaseConfigProvider)(implicit
   private val dbConfig = dbConfigProvider.get[JdbcProfile]
   import dbConfig._
   import driver.api._
-  
+
   private class WaitingTimeTableDef(tag: Tag) extends Table[WaitingTime](tag, "waitingTime") {
 
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
@@ -55,6 +55,16 @@ class WaitingTimes @Inject() (dbConfigProvider: DatabaseConfigProvider)(implicit
     getByUser(user) flatMap {
       case Some(elem) => {
         val waitingToUpdate = elem.copy(crime = nextCrime)
+        updateByUser(user, waitingToUpdate)
+      }
+      case None => Future(0) //something went really bad
+    }
+  }
+
+  def refreshBullets(user: User, next: Timestamp): Future[Int] = {
+    getByUser(user) flatMap {
+      case Some(elem) => {
+        val waitingToUpdate = elem.copy(bullets = next)
         updateByUser(user, waitingToUpdate)
       }
       case None => Future(0) //something went really bad

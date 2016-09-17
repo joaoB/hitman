@@ -9,9 +9,14 @@ import com.google.inject.Singleton
 import model.User
 import model.Users
 import services.crime.CrimeService
+import services.crime.BulletsService
 
-class UserService @Inject() (usersRepository: Users, crimeService: CrimeService, waitingTimeService: WaitingTimeService) {
-  
+class UserService @Inject() (
+    usersRepository: Users,
+    crimeService: CrimeService,
+    bulletsService: BulletsService,
+    waitingTimeService: WaitingTimeService) {
+
   def addUser(user: User): Future[Boolean] = {
     usersRepository.add(user).flatMap(waitingTimeService.create(_)).recover { case _ => false }
   }
@@ -24,24 +29,17 @@ class UserService @Inject() (usersRepository: Users, crimeService: CrimeService,
     usersRepository.get(id)
   }
 
-  def buyBullets(id: Long, amount: Int): Future[String] = {
-    val usr = usersRepository.get(id)
-    if (amount < 0)
-      Future("You can not buy a negative amount of bullets")
-    else {
-      usr flatMap {
-        case Some(user) => usersRepository.buyBullets(user, amount) map (_ => "Success! You bought " + amount + " bullets")
-        case None       => Future("User not found")
-      }
+  def buyBullets(id: Long, amount: Int): Future[String] =
+    usersRepository.get(id).flatMap {
+      case Some(user) => bulletsService.doAction(user, amount)
+      case None       => Future("Invalid user")
     }
-  }
 
-  def doCrime(id: Long): Future[String] = {
+  def doCrime(id: Long): Future[String] =
     usersRepository.get(id).flatMap {
       case Some(user) => crimeService.doAction(user)
       case None       => Future("Invalid user")
     }
-  }
 
   def listAllUsers: Future[Seq[User]] = {
     usersRepository.listAll
