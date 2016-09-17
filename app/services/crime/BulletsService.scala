@@ -26,22 +26,27 @@ class BulletsService @Inject() (
     if (amount <= 0) {
       Future("You have to buy an amount greater than 0 bullets!")
     } else {
-      whenNextAction(user) map {
-        case time if time < 0 => {
-          setHot(user)
-          usersRepository.buyBullets(user, amount)
-          "Success! You bought " + amount + " bullets"
-        }
-        case time => "You still have to wait " + (time / 1000).toInt + " seconds!"
-      }
+      waitingTimeService.getWaitingTimeByUser(user, {
+        wt =>
+          {
+            val time = whenNextAction(wt)
+            if (time < 0) {
+              setHot(wt)
+              usersRepository.buyBullets(user, amount)
+              "Success! You bought " + amount + " bullets"
+            } else {
+              "You still have to wait " + (time / 1000).toInt + " seconds!"
+            }
+          }
+      })
     }
 
   def refresh = {
     (elem: WaitingTime, t: Timestamp) => waitingTimeService.refreshBullets(elem, t)
   }
 
-  def whenNextActionAux(elem: WaitingTime) = {
+  def whenNextAction(elem: WaitingTime) = {
     val now = new Timestamp(Calendar.getInstance.getTime.getTime)
-    Future(elem.bullets.getTime - now.getTime toInt)
+    elem.bullets.getTime - now.getTime
   }
 }

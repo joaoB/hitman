@@ -19,11 +19,12 @@ class WaitingTimeService @Inject() (waitingTimeRepository: WaitingTimes) {
     waitingTimeRepository.add(wt)
   }
 
-  def getWaitingTimeByUser(user: User, f: WaitingTime => Future[Int]): Future[Int] =
-    waitingTimeRepository.getByUser(user).flatMap {
+  def getWaitingTimeByUser(user: User, f: WaitingTime => String): Future[String] = {
+    waitingTimeRepository.getByUser(user).map {
       case Some(wt) => f(wt)
-      case None     => Future(-1)
+      case None     => "Something went very very wrong"
     }
+  }
 
   def refreshCrime(waitingTime: WaitingTime, timestamp: Timestamp): Future[Int] =
     waitingTimeRepository.refreshCrime(waitingTime, timestamp)

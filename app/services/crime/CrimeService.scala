@@ -18,7 +18,7 @@ import service.WaitingTimeService
 class CrimeService @Inject() (
     usersRepository: Users,
     waitingTimeService: WaitingTimeService) extends GenericActionService(waitingTimeService) {
-  
+
   val actionTime: Int = 60 * 1000
 
   private def crimeAmount: Int = {
@@ -26,28 +26,28 @@ class CrimeService @Inject() (
   }
 
   def doAction(user: User): Future[String] = {
-    def doCrimeAux(user: User, time: Long): Future[String] = {
-      if (time < 0) {
-        val prize = crimeAmount
-        usersRepository.addMoney(user, prize)
-        setHot(user)
-        Future("You did " + prize)
-      } else {
-        Future("You still have to wait " + (time / 1000).toInt + " seconds!")
-      }
-    }
-    for {
-      time <- whenNextAction(user)
-      result <- doCrimeAux(user, time)
-    } yield result
+    waitingTimeService.getWaitingTimeByUser(user, {
+      wt =>
+        {
+          val time = whenNextAction(wt)
+          if (time < 0) {
+            val prize = crimeAmount
+            usersRepository.addMoney(user, prize)
+            setHot(wt)
+            "You did " + prize
+          } else {
+            "You still have to wait " + (time / 1000).toInt + " seconds!"
+          }
+        }
+    })
   }
 
   def refresh = {
     (elem: WaitingTime, t: Timestamp) => waitingTimeService.refreshCrime(elem, t)
   }
 
-  def whenNextActionAux(elem: WaitingTime): Future[Int] = {
+  def whenNextAction(elem: WaitingTime): Long = {
     val now = new Timestamp(Calendar.getInstance.getTime.getTime)
-    Future(elem.crime.getTime - now.getTime toInt)
+    elem.crime.getTime - now.getTime
   }
 }
