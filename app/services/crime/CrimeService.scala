@@ -15,6 +15,7 @@ import java.util.Calendar
 import model.WaitingTime
 import service.WaitingTimeService
 
+@Singleton
 class CrimeService @Inject() (
     usersRepository: Users,
     waitingTimeService: WaitingTimeService) extends GenericActionService(waitingTimeService) {

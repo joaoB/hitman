@@ -5,10 +5,11 @@ import play.api.mvc._
 import scala.concurrent.Future
 import service.UserService
 import scala.concurrent.ExecutionContext.Implicits.global
-import javax.inject.Inject
 import scala.concurrent.ExecutionContext
+import com.google.inject._
 
-class ApplicationController @Inject()(userService: UserService) (implicit ec: ExecutionContext) extends Controller {
+@Singleton
+class ApplicationController @Inject() (userService: UserService)(implicit ec: ExecutionContext) extends Controller {
 
   def index = Action.async { implicit request =>
     userService.listAllUsers map { users =>
