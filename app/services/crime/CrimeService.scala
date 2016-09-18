@@ -29,25 +29,21 @@ class CrimeService @Inject() (
     waitingTimeService.getWaitingTimeByUser(user, {
       wt =>
         {
-          val time = whenNextAction(wt)
-          if (time < 0) {
-            val prize = crimeAmount
-            usersRepository.addMoney(user, prize)
-            setHot(wt)
-            "You did " + prize
-          } else {
-            "You still have to wait " + (time / 1000).toInt + " seconds!"
-          }
+          whenNextAction(wt).fold(
+            nextActionMessage => nextActionMessage,
+            result => {
+              val prize = crimeAmount
+              usersRepository.addMoney(user, prize)
+              refresh(wt, super.calculateNextActionTime)
+              "You did " + prize
+            })
         }
     })
   }
 
-  def refresh = {
-    (elem: WaitingTime, t: Timestamp) => waitingTimeService.refreshCrime(elem, t)
-  }
+  def refresh(elem: WaitingTime, t: Timestamp) =
+    waitingTimeService.refreshCrime(elem, t)
 
-  def whenNextAction(elem: WaitingTime): Long = {
-    val now = new Timestamp(Calendar.getInstance.getTime.getTime)
-    elem.crime.getTime - now.getTime
-  }
+  def getTimeOfNextAction(elem: WaitingTime) = elem.crime.getTime
+
 }

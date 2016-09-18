@@ -18,35 +18,35 @@ import service.WaitingTimeService
 class BulletsService @Inject() (
     usersRepository: Users,
     waitingTimeService: WaitingTimeService) extends GenericActionService(waitingTimeService) {
+
   val actionTime: Int = 60 * 60 * 1000
 
   def doAction(user: User) = ??? //think about this later
 
-  def doAction(user: User, amount: Int): Future[String] =
-    if (amount <= 0) {
-      Future("You have to buy an amount greater than 0 bullets!")
-    } else {
-      waitingTimeService.getWaitingTimeByUser(user, {
-        wt =>
-          {
-            val time = whenNextAction(wt)
-            if (time < 0) {
-              setHot(wt)
+  def doActionAux(user: User, amount: Int): Future[String] = {
+    waitingTimeService.getWaitingTimeByUser(user, {
+      wt =>
+        {
+          whenNextAction(wt).fold(
+            nextActionMessage => nextActionMessage,
+            result => {
+              refresh(wt, super.calculateNextActionTime)
               usersRepository.buyBullets(user, amount)
               "Success! You bought " + amount + " bullets"
-            } else {
-              "You still have to wait " + (time / 1000).toInt + " seconds!"
-            }
-          }
-      })
+            })
+        }
+    })
+  }
+
+  def doAction(user: User, amount: Int): Future[String] =
+    amount match {
+      case amount if amount <= 0 => Future("You have to buy an amount greater than 0 bullets!")
+      case _                     => doActionAux(user, amount)
     }
 
-  def refresh = {
-    (elem: WaitingTime, t: Timestamp) => waitingTimeService.refreshBullets(elem, t)
-  }
+  def refresh(elem: WaitingTime, t: Timestamp) =
+    waitingTimeService.refreshBullets(elem, t)
 
-  def whenNextAction(elem: WaitingTime) = {
-    val now = new Timestamp(Calendar.getInstance.getTime.getTime)
-    elem.bullets.getTime - now.getTime
-  }
+  def getTimeOfNextAction(elem: WaitingTime) = elem.bullets.getTime
+
 }
