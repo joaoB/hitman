@@ -14,11 +14,21 @@ import model.WaitingTimes
 import java.util.Calendar
 import model.WaitingTime
 import service.WaitingTimeService
+import akka.actor.Props
+import modules.HelloActor
+import service.UserService
 
 @Singleton
 class BulletsService @Inject() (
     usersRepository: Users,
-    waitingTimeService: WaitingTimeService) extends GenericActionService(waitingTimeService) {
+    waitingTimeService: WaitingTimeService)
+    extends GenericActionService(waitingTimeService) {
+
+  val system = akka.actor.ActorSystem("system")
+  val testActor = system.actorOf(Props(new HelloActor(this)), "hello-actor")
+  import scala.concurrent.duration._
+  val cancellable = system.scheduler.schedule(
+    0.microseconds, 1.second, testActor, HelloActor.SayHello("a"))
 
   val actionTime: Int = 60 * 60 * 1000
 
@@ -30,6 +40,7 @@ class BulletsService @Inject() (
     })
   }
 
+  
   private def maxBulletsAmount(amount: Int) = {
     if (amount <= 1000) Right(true) else Left("You can only buy 1000 bullets")
   }
