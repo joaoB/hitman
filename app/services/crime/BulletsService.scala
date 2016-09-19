@@ -26,27 +26,34 @@ class BulletsService @Inject() (
 
   def doActionAux(user: User, amount: Int): Future[String] = {
     waitingTimeService.getWaitingTimeByUser(user, {
-      wt =>
-        {
-          whenNextAction(wt).fold(
-            nextActionMessage => nextActionMessage,
-            totalPrice => {
-              userHasMoney(user, amount) match {
-                case Left(noCash) => noCash
-                case Right(totalPrice) => {
-                  refresh(wt, super.calculateNextActionTime)
-                  usersRepository.buyBullets(user, amount)
-                  usersRepository.addMoney(user, -totalPrice)
-                  "Success! You bought " + amount + " bullets"
-                }
-              }
-
-            })
-        }
+      wt => buyBullets(user, amount, wt)
     })
   }
 
-  private def userHasMoney(user: User, amount: Int) : Either[String, Int] = {
+  private def maxBulletsAmount(amount: Int) = {
+    if (amount <= 1000) Right(true) else Left("You can only buy 1000 bullets")
+  }
+
+  private def buyBullets(user: User, amount: Int, wt: WaitingTime) = {
+    val result = for {
+      nextAction <- whenNextAction(wt).right
+      amountValid <- maxBulletsAmount(amount).right
+      totalPrice <- userHasMoney(user, amount).right
+    } yield totalPrice
+
+    result match {
+      case Left(error) => error
+      case Right(totalPrice) => {
+        refresh(wt, super.calculateNextActionTime)
+        usersRepository.buyBullets(user, amount)
+        usersRepository.addMoney(user, -totalPrice)
+        "Success! You bought " + amount + " bullets"
+      }
+    }
+
+  }
+
+  private def userHasMoney(user: User, amount: Int): Either[String, Int] = {
     val totalPrice = amount * 30 // 30 is the price per bullet, make this a service later
     if (user.money > totalPrice) {
       Right(totalPrice)
