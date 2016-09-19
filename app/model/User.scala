@@ -59,5 +59,5 @@ class Users @Inject() (dbConfigProvider: DatabaseConfigProvider)(implicit ec: Ex
   def update(userToUpdate: User) = {
     dbConfig.db.run(users.filter(_.id === userToUpdate.id).update(userToUpdate))
   }
-
+  
 }

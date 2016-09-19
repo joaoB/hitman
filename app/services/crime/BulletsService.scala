@@ -30,13 +30,29 @@ class BulletsService @Inject() (
         {
           whenNextAction(wt).fold(
             nextActionMessage => nextActionMessage,
-            result => {
-              refresh(wt, super.calculateNextActionTime)
-              usersRepository.buyBullets(user, amount)
-              "Success! You bought " + amount + " bullets"
+            totalPrice => {
+              userHasMoney(user, amount) match {
+                case Left(noCash) => noCash
+                case Right(totalPrice) => {
+                  refresh(wt, super.calculateNextActionTime)
+                  usersRepository.buyBullets(user, amount)
+                  usersRepository.addMoney(user, -totalPrice)
+                  "Success! You bought " + amount + " bullets"
+                }
+              }
+
             })
         }
     })
+  }
+
+  private def userHasMoney(user: User, amount: Int) : Either[String, Int] = {
+    val totalPrice = amount * 30 // 30 is the price per bullet, make this a service later
+    if (user.money > totalPrice) {
+      Right(totalPrice)
+    } else {
+      Left("You do not have enough cash!")
+    }
   }
 
   def doAction(user: User, amount: Int): Future[String] =
