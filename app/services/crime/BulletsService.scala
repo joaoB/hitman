@@ -20,15 +20,15 @@ import service.UserService
 
 @Singleton
 class BulletsService @Inject() (
-    usersRepository: Users,
-    waitingTimeService: WaitingTimeService)
+  usersRepository: Users,
+  waitingTimeService: WaitingTimeService)
     extends GenericActionService(waitingTimeService) {
 
   val system = akka.actor.ActorSystem("system")
   val testActor = system.actorOf(Props(new HelloActor(this)), "hello-actor")
   import scala.concurrent.duration._
   //val cancellable = system.scheduler.schedule(
-    //0.microseconds, 1.second, testActor, HelloActor.SayHello("a"))
+  //0.microseconds, 1.second, testActor, HelloActor.SayHello("a"))
 
   val actionTime: Int = 60 * 60 * 1000
 
@@ -40,28 +40,27 @@ class BulletsService @Inject() (
     })
   }
 
-  
   private def maxBulletsAmount(amount: Int) = {
     if (amount <= 1000) Right(true) else Left("You can only buy 1000 bullets")
   }
 
-  private def buyBullets(user: User, amount: Int, wt: WaitingTime) = {
+  private def finalizeBuyBullets(wt: WaitingTime, user: User, amount: Int, totalPrice: Int): String = {
+    refresh(wt, super.calculateNextActionTime)
+    usersRepository.buyBullets(user, amount)
+    usersRepository.addMoney(user, -totalPrice)
+    "Success! You bought " + amount + " bullets"
+  }
+
+  private def buyBullets(user: User, amount: Int, wt: WaitingTime): String = {
     val result = for {
       nextAction <- whenNextAction(wt).right
       amountValid <- maxBulletsAmount(amount).right
       totalPrice <- userHasMoney(user, amount).right
     } yield totalPrice
 
-    result match {
-      case Left(error) => error
-      case Right(totalPrice) => {
-        refresh(wt, super.calculateNextActionTime)
-        usersRepository.buyBullets(user, amount)
-        usersRepository.addMoney(user, -totalPrice)
-        "Success! You bought " + amount + " bullets"
-      }
-    }
-
+    result.fold(
+      err => err,
+      totalPrice => finalizeBuyBullets(wt, user, amount, totalPrice))
   }
 
   private def userHasMoney(user: User, amount: Int): Either[String, Int] = {
