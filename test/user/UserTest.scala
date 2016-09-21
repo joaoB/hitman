@@ -1,41 +1,42 @@
 package user
 
+import scala.concurrent.Future
+
+import org.scalatest._
 import org.scalatestplus.play._
-import scala.concurrent.ExecutionContext.Implicits.global
-import org.scalatest.Matchers._ //when should
-import scala.collection.mutable
+
+import play.api.mvc._
+import play.api.test._
+import play.api.test.Helpers._
 import service.UserService
-import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
-import model.User
-import scala.concurrent._
-import org.scalatest.concurrent._
+import controllers.ApplicationController
+import scala.concurrent.ExecutionContext.Implicits.global
+import service.UserService
+import com.google.inject._
+import play.api.http.Writeable
+import play.api.inject.guice.GuiceApplicationBuilder
 
-class StackSpec extends PlaySpec with MockitoSugar  with ScalaFutures {
+class ExampleControllerSpec extends PlaySpecification with Results {
+  "Example Page#index" should {
 
-  "A Stack" must {
-    "pop values in last-in-first-out order" in {
-      val mockDataService = mock[UserService]
-      val user = User(0, "fiona", 0, 0, 0, 0)
-      mockDataService.addUser(user)
-      mockDataService.listAllUsers
-      //      when(mockDataService.listAllUsers) thenReturn Data(new java.util.Date())
+    lazy val app = new GuiceApplicationBuilder().build
+    val basicHeaders = Headers(
+      "type" -> "application/json")
+    def routeGET(uri: String) = getRoute(GET, uri, AnyContentAsEmpty)
+    def getRoute[A](method: String, uri: String, body: A)(implicit w: Writeable[A]) = route(app, FakeRequest(method, uri, basicHeaders, body)).get
 
-      when(mockDataService.listAllUsers) thenReturn Future(user :: Nil)
-      //when(mockDataService.addUser(user)) thenReturn user.id
-
-      
-      val users = mockDataService.listAllUsers
-      whenReady(users) { result =>
-        result.length mustBe 1
-      }
-
+    def codeMustMatch(code: Int, result: Future[Result]) = {
+      status(result) must equalTo(code)
     }
-    "throw NoSuchElementException if an empty stack is popped" in {
-      val emptyStack = new mutable.Stack[Int]
-      a[NoSuchElementException] must be thrownBy {
-        emptyStack.pop()
-      }
+
+    s"warn if header is not present" in {
+      codeMustMatch(200, routeGET("/"))
+    }
+
+    s"warn if header is not present" in {
+      val result = routeGET("/")
+      status(result) must equalTo(OK)
+      contentAsString(result) must contain("Registered Users")
     }
   }
 }
