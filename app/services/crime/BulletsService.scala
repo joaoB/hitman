@@ -27,8 +27,8 @@ class BulletsService @Inject() (
   val system = akka.actor.ActorSystem("system")
   val testActor = system.actorOf(Props(new HelloActor(this)), "hello-actor")
   import scala.concurrent.duration._
-  val cancellable = system.scheduler.schedule(
-    0.microseconds, 1.second, testActor, HelloActor.SayHello("a"))
+  //val cancellable = system.scheduler.schedule(
+    //0.microseconds, 1.second, testActor, HelloActor.SayHello("a"))
 
   val actionTime: Int = 60 * 60 * 1000
 
