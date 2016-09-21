@@ -34,16 +34,6 @@ class BulletsService @Inject() (
 
   def doAction(user: User) = ??? //think about this later
 
-  def doActionAux(user: User, amount: Int): Future[String] = {
-    waitingTimeService.getWaitingTimeByUser(user, {
-      wt => buyBullets(user, amount, wt)
-    })
-  }
-
-  private def maxBulletsAmount(amount: Int) = {
-    if (amount <= 1000) Right(true) else Left("You can only buy 1000 bullets")
-  }
-
   private def finalizeBuyBullets(wt: WaitingTime, user: User, amount: Int, totalPrice: Int): String = {
     refresh(wt, super.calculateNextActionTime)
     usersRepository.buyBullets(user, amount)
@@ -54,8 +44,7 @@ class BulletsService @Inject() (
   private def buyBullets(user: User, amount: Int, wt: WaitingTime): String = {
     val result = for {
       nextAction <- whenNextAction(wt).right
-      amountValid <- maxBulletsAmount(amount).right
-      totalPrice <- userHasMoney(user, amount).right
+      totalPrice <- BuyBulletsValidator(user, amount).validate.right
     } yield totalPrice
 
     result.fold(
@@ -63,20 +52,11 @@ class BulletsService @Inject() (
       totalPrice => finalizeBuyBullets(wt, user, amount, totalPrice))
   }
 
-  private def userHasMoney(user: User, amount: Int): Either[String, Int] = {
-    val totalPrice = amount * 30 // 30 is the price per bullet, make this a service later
-    if (user.money > totalPrice) {
-      Right(totalPrice)
-    } else {
-      Left("You do not have enough cash!")
-    }
+  def doAction(user: User, amount: Int): Future[String] = {
+    waitingTimeService.getWaitingTimeByUser(user, {
+      wt => buyBullets(user, amount, wt)
+    })
   }
-
-  def doAction(user: User, amount: Int): Future[String] =
-    amount match {
-      case amount if amount <= 0 => Future("You have to buy an amount greater than 0 bullets!")
-      case _                     => doActionAux(user, amount)
-    }
 
   def refresh(elem: WaitingTime, t: Timestamp) =
     waitingTimeService.refreshBullets(elem, t)
