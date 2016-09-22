@@ -46,8 +46,8 @@ class Users @Inject() (dbConfigProvider: DatabaseConfigProvider)(implicit ec: Ex
     dbConfig.db.run(users.result)
   }
   
-  def buyBullets(user: User, amount: Int) = {
-    val userToUpdate = user.copy(bullets = user.bullets + amount)
+  def buyBullets(user: User, bulletsAmount: Int, price: Int) = {
+    val userToUpdate = user.copy(bullets = user.bullets + bulletsAmount, money = user.money - price)
     update(userToUpdate)
   }
 

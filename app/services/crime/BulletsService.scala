@@ -36,8 +36,7 @@ class BulletsService @Inject() (
 
   private def finalizeBuyBullets(wt: WaitingTime, user: User, amount: Int, totalPrice: Int): String = {
     refresh(wt, super.calculateNextActionTime)
-    usersRepository.buyBullets(user, amount)
-    usersRepository.addMoney(user, -totalPrice)
+    usersRepository.buyBullets(user, amount, totalPrice)
     "Success! You bought " + amount + " bullets"
   }
 
