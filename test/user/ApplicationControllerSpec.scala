@@ -22,11 +22,10 @@ class ApplicationControllerSpec extends PlaySpecification with Mockito with Resu
   "EmployeeController " should {
 
     "create a employee" in new WithEmpApplication() {
-      val user = User(0, "a", 0, 0, 1, 1)
+      //val user = User(0, "a", 0, 0, 1, 1)
       
       mockedService.doCrime(11) returns Future.successful("You did")
       val result = appController.doCrime(11).apply(FakeRequest())
-      
       val resultAsString = contentAsString(result)
       resultAsString must contain("You did")
     }

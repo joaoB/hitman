@@ -51,52 +51,52 @@ class ExampleControllerSpec extends PlaySpecification with Results {
       contentAsString(result) must contain("Invalid user")
     }
 
-    s"Reset response times" in {
-      val result = routeGET("/reset/11")
-      status(result) must equalTo(OK)
-      contentAsString(result) must contain("Times reseted for user 11")
-    }
-
-    s"Correct response when buying to much bullets" in {
-      val result = routeGET("/buyBullets/11/1001")
-      status(result) must equalTo(OK)
-      contentAsString(result) must contain("You have to buy an amount of bullets greater than zero and less than 1000!")
-    }
-
-    s"Correct response when buying under bullets" in {
-      val result = routeGET("/buyBullets/11/0")
-      status(result) must equalTo(OK)
-      contentAsString(result) must contain("You have to buy an amount of bullets greater than zero and less than 1000!")
-    }
-
-    s"Correct response when you do not have enough cash" in {
-      val result = routeGET("/buyBullets/11/1000")
-      status(result) must equalTo(OK)
-      contentAsString(result) must contain("You do not have enough cash!")
-    }
-
-    s"Correct response when you buy bullets" in {
-      val result = routeGET("/buyBullets/11/1")
-      status(result) must equalTo(OK)
-      contentAsString(result) must contain("Success")
-    }
-
-    s"Reset response times" in {
-      val result = routeGET("/reset/11")
-      status(result) must equalTo(OK)
-      contentAsString(result) must contain("Times reseted for user 11")
-    }
-
-    s"Correct response when you buy bullets after reset" in {
-      val result = routeGET("/buyBullets/11/1")
-      status(result) must equalTo(OK)
-      contentAsString(result) must contain("Success")
-    }
-
-    s"Correct response (give waiting time) when trying to buy when hot" in {
-      val result = routeGET("/buyBullets/11/0")
-      status(result) must equalTo(OK)
-      contentAsString(result) must contain("You still have to wait ")
-    }
+//    s"Reset response times" in {
+//      val result = routeGET("/reset/11")
+//      status(result) must equalTo(OK)
+//      contentAsString(result) must contain("Times reseted for user 11")
+//    }
+//
+//    s"Correct response when buying to much bullets" in {
+//      val result = routeGET("/buyBullets/11/1001")
+//      status(result) must equalTo(OK)
+//      contentAsString(result) must contain("You have to buy an amount of bullets greater than zero and less than 1000!")
+//    }
+//
+//    s"Correct response when buying under bullets" in {
+//      val result = routeGET("/buyBullets/11/0")
+//      status(result) must equalTo(OK)
+//      contentAsString(result) must contain("You have to buy an amount of bullets greater than zero and less than 1000!")
+//    }
+//
+//    s"Correct response when you do not have enough cash" in {
+//      val result = routeGET("/buyBullets/11/1000")
+//      status(result) must equalTo(OK)
+//      contentAsString(result) must contain("You do not have enough cash!")
+//    }
+//
+//    s"Correct response when you buy bullets" in {
+//      val result = routeGET("/buyBullets/11/1")
+//      status(result) must equalTo(OK)
+//      contentAsString(result) must contain("Success")
+//    }
+//
+//    s"Reset response times" in {
+//      val result = routeGET("/reset/11")
+//      status(result) must equalTo(OK)
+//      contentAsString(result) must contain("Times reseted for user 11")
+//    }
+//
+//    s"Correct response when you buy bullets after reset" in {
+//      val result = routeGET("/buyBullets/11/1")
+//      status(result) must equalTo(OK)
+//      contentAsString(result) must contain("Success")
+//    }
+//
+//    s"Correct response (give waiting time) when trying to buy when hot" in {
+//      val result = routeGET("/buyBullets/11/0")
+//      status(result) must equalTo(OK)
+//      contentAsString(result) must contain("You still have to wait ")
+//    }
   }
 }
