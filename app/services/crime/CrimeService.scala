@@ -23,7 +23,8 @@ class CrimeService @Inject() (
   val actionTime: Int = 60 * 1000
 
   private def crimeAmount: Int = {
-    Math.random * 1000 toInt
+    //Math.random * 1000 toInt
+    1
   }
 
   def doAction(user: User): Future[String] = {

@@ -43,14 +43,16 @@ class UserService @Inject() (
   def buyBullets(id: Long, amount: Int): Future[String] =
     getUser(id, bulletsService.doAction(_, amount))
 
-  def doCrime(id: Long): Future[String] =
+  def doCrime(id: Long): Future[String] = {
     getUser(id, crimeService.doAction)
+  }
 
   def listAllUsers: Future[Seq[User]] = {
     usersRepository.listAll
   }
 
-  def resetUserTimes(id: Long) = 
+  def resetUserTimes(id: Long) =
     getUser(id, waitingTimeService.resetTimesByUser(_))
-      
+
+  def one = 1
 }
