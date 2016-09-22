@@ -29,14 +29,51 @@ class ExampleControllerSpec extends PlaySpecification with Results {
       status(result) must equalTo(code)
     }
 
-    s"warn if header is not present" in {
+    s"Index is available" in {
       codeMustMatch(200, routeGET("/"))
     }
 
-    s"warn if header is not present" in {
+    s"Index returns correct response" in {
       val result = routeGET("/")
       status(result) must equalTo(OK)
       contentAsString(result) must contain("Registered Users")
     }
+
+    s"Index returns correct response" in {
+      val result = routeGET("/doCrime/0")
+      status(result) must equalTo(OK)
+      contentAsString(result) must contain("Invalid user")
+    }
+
+    s"Index returns correct response" in {
+      val result = routeGET("/buyBullets/0/1000")
+      status(result) must equalTo(OK)
+      contentAsString(result) must contain("Invalid user")
+    }
+
+    s"Index returns correct response" in {
+      val result = routeGET("/buyBullets/11/1001")
+      status(result) must equalTo(OK)
+      contentAsString(result) must contain("You have to buy an amount of bullets greater than zero and less than 1000!")
+    }
+
+    s"Index returns correct response" in {
+      val result = routeGET("/buyBullets/11/0")
+      status(result) must equalTo(OK)
+      contentAsString(result) must contain("You have to buy an amount of bullets greater than zero and less than 1000!")
+    }
+
+    s"Index returns correct response" in {
+      val result = routeGET("/buyBullets/11/1000")
+      status(result) must equalTo(OK)
+      contentAsString(result) must contain("You do not have enough cash!")
+    }
+
+    s"Index returns correct response" in {
+      val result = routeGET("/buyBullets/11/1")
+      status(result) must equalTo(OK)
+      contentAsString(result) must contain("Success")
+    }
+
   }
 }

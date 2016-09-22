@@ -41,5 +41,11 @@ class ApplicationController @Inject() (userService: UserService)(implicit ec: Ex
     }
   }
 
+  def resetTime(id: Long) = Action.async { implicit request =>
+    userService.resetUserTimes(id) map { result =>
+      Ok(result)
+    }
+  }
+
 }
 

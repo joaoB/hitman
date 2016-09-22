@@ -12,15 +12,15 @@ import services.crime.CrimeService
 import services.crime.BulletsService
 import service.WaitingTimeService
 
-trait UserServices{
-  def addUser(user: User) : Future[Boolean]
+trait UserServices {
+  def addUser(user: User): Future[Boolean]
 }
 
 class UserService @Inject() (
     usersRepository: Users,
     crimeService: CrimeService,
     bulletsService: BulletsService,
-    waitingTimeService: WaitingTimeService) extends UserServices{
+    waitingTimeService: WaitingTimeService) extends UserServices {
 
   def addUser(user: User): Future[Boolean] = {
     usersRepository.add(user).flatMap(waitingTimeService.create(_)).recover { case _ => false }
@@ -49,4 +49,8 @@ class UserService @Inject() (
   def listAllUsers: Future[Seq[User]] = {
     usersRepository.listAll
   }
+
+  def resetUserTimes(id: Long) = 
+    getUser(id, waitingTimeService.resetTimesByUser(_))
+      
 }

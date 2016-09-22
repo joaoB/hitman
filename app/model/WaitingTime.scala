@@ -12,6 +12,7 @@ import play.api.data.Forms._
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile
 import slick.driver.MySQLDriver.api._
+import java.util.Calendar
 
 case class WaitingTime(id: Long, bullets: Timestamp, crime: Timestamp, user: Long)
 
@@ -62,6 +63,11 @@ class WaitingTimes @Inject() (dbConfigProvider: DatabaseConfigProvider)(implicit
 
   def refreshBullets(elem: WaitingTime, next: Timestamp): Future[Int] = {
     val waitingToUpdate = elem.copy(bullets = next)
+    update(waitingToUpdate)
+  }
+
+  def resetTimes(elem: WaitingTime, next: Timestamp): Future[Int] = {
+    val waitingToUpdate = elem.copy(crime = next, bullets = next)
     update(waitingToUpdate)
   }
 

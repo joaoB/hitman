@@ -26,6 +26,17 @@ class WaitingTimeService @Inject() (waitingTimeRepository: WaitingTimes) {
     }
   }
 
+  def resetTimesByUser(user: User): Future[String] =
+    getWaitingTimeByUser(user, 
+      resetTimes(_)
+    )
+
+  def resetTimes(elem: WaitingTime): String = {
+    val now = new Timestamp(Calendar.getInstance.getTime.getTime)
+    waitingTimeRepository.resetTimes(elem, now)
+    "Times reseted for user " + elem.user
+  }
+
   def refreshCrime(waitingTime: WaitingTime, timestamp: Timestamp): Future[Int] =
     waitingTimeRepository.refreshCrime(waitingTime, timestamp)
 
